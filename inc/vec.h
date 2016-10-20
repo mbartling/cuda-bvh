@@ -1,4 +1,6 @@
 #pragma once
+#include <cuda_runtime.h>
+#include <math.h>
 
 class Vec3f{
     public:
@@ -32,7 +34,7 @@ class Vec3f{
 
 __host__ __device__ __inline__
 float operator * (const Vec3f& a, const Vec3f b){
-    return a.x*b*x + a.y*b*y + a.z*b*z;
+    return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
 __host__ __device__ __inline__
@@ -70,10 +72,10 @@ class Vec4f{
         
         // Constructors
         __host__ __device__
-        Vec3f(float x, float y, float z, float w): x(x), y(y), z(z), w(w){}
+        Vec4f(float x, float y, float z, float w): x(x), y(y), z(z), w(w){}
 
         __host__ __device__
-        Vec3f(float x, float y, float z): x(x), y(y), z(z){}
+        Vec4f(float x, float y, float z): x(x), y(y), z(z){}
         
         __host__ __device__
         Vec4f(float x, float y): x(x), y(y) {}

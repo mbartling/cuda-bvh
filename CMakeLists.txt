@@ -4,7 +4,7 @@ find_package(CUDA QUIET REQUIRED)
 set(
     CUDA_NVCC_FLAGS
     ${CUDA_NVCC_FLAGS};
-    -O3 -gencode arch=compute_22,code=sm_22
+    -O3 -gencode arch=compute_35,code=sm_35
     )
 
 # Specify include directories
@@ -16,5 +16,5 @@ file(GLOB SOURCES src/*.cpp src/*.cc)
 file(GLOB CUDA_SOURCES kernels/*.cu)
 
 cuda_add_executable(cuda_bvh ${SOURCES} ${CUDA_SOURCES})
-
-add_executable(cpu_bvh ${SOURCES})
+#leave this out for now
+#add_executable(cpu_bvh ${SOURCES})
