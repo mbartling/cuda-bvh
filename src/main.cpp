@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "optionparser.h"
+#include "bvh.h"
 
 struct Arg: public option::Arg
 {
@@ -141,6 +142,8 @@ int main(int argc, char* argv[])
         break;
       case REQUIRED:
         fprintf(stdout, "--required with argument '%s'\n", opt.arg);
+        /*build the tree */
+        bvh();
         break;
       case NUMERIC:
         fprintf(stdout, "--numeric with argument '%s'\n", opt.arg);
