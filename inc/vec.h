@@ -127,3 +127,34 @@ __host__ __device__ __inline__
 float norm(const Vec4f& a){
     return sqrtf(a.x*a.x + a.y*a.y + a.z*a.z + a.w*a.w);
 }
+
+// x,y,z are rows
+class Mat3f{
+    public:
+        Vec3f x;
+        Vec3f y;
+        Vec3f z;
+
+        __host__ __device__
+        Mat3f(float xx, float xy, float xz,
+              float yx, float yy, float yz,
+              float zx, float zy, float zz): x(xx,yy,zz), y(yx, yy, yz), z(zx, zy, zz) {}
+        
+        __host__ __device__
+        Mat3f() : x(), y(), z() {}
+        
+        __host__ __device__
+        Mat3f(Vec3f x, Vec3f y, Vec3f z) x(x), y(y), z(z) {}
+
+};
+
+__host__ __device__ __inline__
+Vec3f multAT_x(const Mat3f& A, const Vec3f& f){
+    return Vec3f(A.x.x * f.x + A.y.x * f.y + A.z.x * f.z, 
+                 A.x.y * f.x + A.y.y*f.y + A.z.y*f.z, 
+                 A.x.z * f.x + A.y.z * f.y + A.z.z * f.z);
+
+__host__ __device__ __inline__
+Vec3f multxT_A(const Vec3f& f, const Mat3f& A){
+    return multAT_x(A, f); // Same value except this one should be treated as transposed
+}
