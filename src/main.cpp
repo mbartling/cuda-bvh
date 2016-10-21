@@ -12,10 +12,15 @@
  * @include example_arg.cc
  */
 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
+#include <vector>
 #include "optionparser.h"
 #include "bvh.h"
+#include "tiny_obj_loader.h"
+
 
 struct Arg: public option::Arg
 {
@@ -141,9 +146,53 @@ int main(int argc, char* argv[])
           fprintf(stdout, "--optional without the optional argument\n");
         break;
       case REQUIRED:
-        fprintf(stdout, "--required with argument '%s'\n", opt.arg);
-        /*build the tree */
-        bvh();
+	{
+		fprintf(stdout, "--required with argument '%s'\n", opt.arg);
+		/*build the tree */
+
+		std::string inputfile = opt.arg;
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+
+		std::string err;
+		bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+
+		if (!err.empty()) { // `err` may contain warning message.
+			std::cerr << err << std::endl;
+		}
+
+		if (!ret) {
+			exit(1);
+		}
+		// Loop over shapes
+		for (size_t s = 0; s < shapes.size(); s++) {
+                        std::cout << "shape # : " << s << std::endl;
+			// Loop over faces(polygon)
+			size_t index_offset = 0;
+			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+			//for (size_t f = 0; f < 1; f++) {
+			        // should only have one face for the triangle!
+                                std::cout << "face # : " << f << std::endl;
+				int fv = shapes[s].mesh.num_face_vertices[f];
+
+				// Loop over vertices in the face.
+				for (size_t v = 0; v < fv; v++) {
+					// access to vertex
+					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+					float vx = attrib.vertices[3*idx.vertex_index+0];
+					float vy = attrib.vertices[3*idx.vertex_index+1];
+					float vz = attrib.vertices[3*idx.vertex_index+2];
+                                        std::cout << "vertex # : " << v << std::endl;
+                                        std::cout << " vx : " << vx << " vy : " << vy << " vz : " << vz << std::endl;
+				}
+				index_offset += fv;
+
+			}
+		}
+
+		bvh();
+	}
         break;
       case NUMERIC:
         fprintf(stdout, "--numeric with argument '%s'\n", opt.arg);
