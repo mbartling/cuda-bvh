@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "bvh.h"
+#include <thrust/sort.h>
 
 __global__ void hello()
 {
@@ -47,6 +48,13 @@ void BVH_d::computeMortonCodes(){
         (numTriangles + threadsPerBlock - 1) / threadsPerBlock;
     computeMortonCodesKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, BBoxs, numTriangles);
     
+}
+void BVH_d::sortMortonCodes(){
+    thrust::device_ptr<unsigned int> dev_mortonCodes(mortonCodes);
+    thrust::device_ptr<unsigned int> dev_object_ids(object_ids);
+    
+    // Let thrust do all the work for us
+    thrust::sort_by_key(dev_mortonCodes, dev_mortonCodes + numTriangles, dev_object_ids);
 }
 void bvh(void)
 {

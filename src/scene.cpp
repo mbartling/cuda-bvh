@@ -63,6 +63,8 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
 
     computeBoundingBoxes();
 
+    bvh.setUp(vertices, BBoxs, t_indices, numTriangles);
+
 
     return *this;
 }

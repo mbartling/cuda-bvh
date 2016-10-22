@@ -85,6 +85,7 @@ class Scene_d{
         TriangleIndices* t_indices;
 
         Vec4f* image;
+        BVH_d bvh;
 
         friend class Scene_h;
     public:

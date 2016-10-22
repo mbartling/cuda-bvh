@@ -9,6 +9,11 @@ void BVH_d::setUp(Vec3f* mvertices, BoundingBox* mBBoxs, TriangleIndices* mt_ind
     cudaMalloc(mortonCodes, numTriangles*sizeof(unsigned int));
     cudaMalloc(object_ids, numTriangles*sizeof(unsigned int));
 
+    // Set up for the BVH Build
+    computeMortonCodes();
+    sortMortonCodes();
+
+    // Build the BVH
 
 }
 

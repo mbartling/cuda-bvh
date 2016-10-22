@@ -21,6 +21,9 @@ class BVH_d {
 
         void setUp(Vec3f* mvertices, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int numTriangles);
         ~BVH_d();
+        void computeMortonCodes(); //Also Generates the objectIds
+        void sortMortonCodes();
+        
         
 
 };
