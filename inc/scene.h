@@ -18,6 +18,7 @@ struct TriangleIndices{
 
 //Our mesh is always 3 vertices per face
 // A trimesh just knows the indices of its vertices/normals/
+// This trimesh is probably not needed
 class TriMesh{
     private:
         //On Device data
@@ -55,8 +56,16 @@ class Scene_h{
         // Host Side
         attrib_t mAttributes;
         vector<Vec4f> image;
+        vector<TriangleIndices> t_indices;
+        vector<int> material_ids;
+        int imageWidth;
+        int imageHeight;
 
     public:
+        Scene_h(): imageWidth(512), imageHeight(512) {}
+        Scene_h(int imageWidth, int imageHeight): imageWidth(imageWidth), imageHeight(imageHeight) {}
+
+        void LoadObj(string filename);
 
         Scene_h& operator = (const Scene_d& deviceScene); //Copy image from the device
 
