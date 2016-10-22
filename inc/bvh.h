@@ -10,6 +10,7 @@ struct Node{
     Node* childB;
     Node* parent;
     bool isLeaf;
+    BoundingBox BBox;
 
     __device__ 
     Node() : isLeaf(false) {}
