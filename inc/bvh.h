@@ -4,12 +4,39 @@
 #include "tinyobjloader.h"
 #include "tris.h"
 
+
+struct Node{
+    Node* childA;
+    Node* childB;
+    Node* parent;
+    bool isLeaf;
+
+    __device__ 
+    Node() : isLeaf(false) {}
+};
+struct LeafNode : public Node {
+    unsigned int object_id;
+    
+    _device__
+    LeafNode() {
+        this->isLeaf = true;
+    }
+};
+struct InternalNode : public Node {
+    __device__
+    InternalNode() {
+        this->isLeaf = false;
+    }
+};
 //Device BVH
 class BVH_d {
     private:
         unsigned int* mortonCodes;
         unsigned int* object_ids;
 
+        LeafNode*       leafNodes; //numTriangles
+        InternalNode*   internalNodes; //numTriangles - 1
+        
         // These are stored in the scene
         int numTriangles;
         Vec3f* vertices; 
@@ -23,6 +50,9 @@ class BVH_d {
         ~BVH_d();
         void computeMortonCodes(); //Also Generates the objectIds
         void sortMortonCodes();
+
+        void setupLeafNodes();
+        void buildTree();
         
         
 
