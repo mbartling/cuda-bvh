@@ -55,12 +55,22 @@ Vec3f operator % (const Vec3f& a, const Vec3f b){
 
 __host__ __device__ __inline__
 void normalize(Vec3f& a){
-    float sqinv = 1.0f/sqrtf(a.x*a.x + a.y*a.y + a.z*a.z);
+    float sqinv = rnorm3df(a.x, a.y, a.z);
     a *= sqinv;
 }
 __host__ __device__ __inline__
 float norm(const Vec3f& a){
-    return sqrtf(a.x*a.x + a.y*a.y + a.z*a.z);
+    return norm3df(a.x, a.y, a.z);
+}
+
+__device__ __inline__
+Vec3f maximum(const Vec3f& a, const Vec3f& b){
+    return Vec3f(fmaxf(a.x, b.x), fmaxf(a.y, b.y), fmaxf(a.z, b.z));
+}
+
+__device__ __inline__
+Vec3f minimum(const Vec3f& a, const Vec3f& b){
+    return Vec3f(fminf(a.x, b.x), fminf(a.y, b.y), fminf(a.z, b.z));
 }
 
 class Vec4f{

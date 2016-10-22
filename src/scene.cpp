@@ -67,4 +67,11 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
     return *this;
 }
 
+Scene_d::~Scene_d(){
+    cudaFree(vertices);
+    cudaFree(normals);
+    cudaFree(BBoxs);
+    cudaFree(t_indices);
+    cudaFree(image);
+}
 

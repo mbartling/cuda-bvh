@@ -60,6 +60,8 @@ class Scene_h{
         vector<int> material_ids;
         int imageWidth;
         int imageHeight;
+        
+        friend class Scene_d;
 
     public:
         Scene_h(): imageWidth(512), imageHeight(512) {}
@@ -86,12 +88,17 @@ class Scene_d{
         Vec3f* texcoords;
         BoundingBox* BBoxs; //Per Triangle Bounding Box
 
-        Trimesh* mTrimeshes;
+        TriangleIndices* t_indices;
+
         Vec4f* image;
 
+        friend class Scene_h;
     public:
 
         Scene_d& operator = (const Scene_h& hostScene); //Copy Triangles, materials, etc to the device
+    
+        void computeBoundingBoxes();
 
+        ~Scene_d();
 
 };
