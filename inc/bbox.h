@@ -5,10 +5,10 @@ class BoundingBox {
 	
 	bool bEmpty;
 	bool dirty;
-	Vec3d bmin;
-	Vec3d bmax;
-	double bArea;
-	double bVolume;
+	Vec3f bmin;
+	Vec3f bmax;
+	float bArea;
+	float bVolume;
 
 public:
 
@@ -16,38 +16,38 @@ public:
 	BoundingBox() : bEmpty(true) {}
     
     __device__
-	BoundingBox(Vec3d bMin, Vec3d bMax) : bmin(bMin), bmax(bMax), bEmpty(false), dirty(true) {}
+	BoundingBox(Vec3f bMin, Vec3f bMax) : bmin(bMin), bmax(bMax), bEmpty(false), dirty(true) {}
 
-    __device__
-	Vec3d getMin() const { return bmin; }
-    __device__
-	Vec3d getMax() const { return bmax; }
+    __device__ __inline__
+	Vec3f getMin() const { return bmin; }
+    __device__ __inline__
+	Vec3f getMax() const { return bmax; }
     __device__
 	bool isEmpty() { return bEmpty; }
 
     __device__
-	void setMin(Vec3d bMin) {
+	void setMin(Vec3f bMin) {
 		bmin = bMin;
 		dirty = true;
 		bEmpty = false;
 	}
     __device__
-	void setMax(Vec3d bMax) {
+	void setMax(Vec3f bMax) {
 		bmax = bMax;
 		dirty = true;
 		bEmpty = false;
 	}
     __device__
-	void setMin(int i, double val) {
-		if (i == 0) { bmin[0] = val; dirty = true; bEmpty = false; }
-		else if (i == 1) { bmin[1] = val; dirty = true; bEmpty = false; }
-			else if (i == 2) { bmin[2] = val; dirty = true; bEmpty = false; }
+	void setMin(int i, float val) {
+		if (i == 0) { bmin.x = val; dirty = true; bEmpty = false; }
+		else if (i == 1) { bmin.y = val; dirty = true; bEmpty = false; }
+			else if (i == 2) { bmin.z = val; dirty = true; bEmpty = false; }
 	}
     __device__
-	void setMax(int i, double val) {
-		if (i == 0) { bmax[0] = val; dirty = true; bEmpty = false; }
-		else if (i == 1) { bmax[1] = val; dirty = true; bEmpty = false; }
-			else if (i == 2) { bmax[2] = val; dirty = true; bEmpty = false; }
+	void setMax(int i, float val) {
+		if (i == 0) { bmax.x = val; dirty = true; bEmpty = false; }
+		else if (i == 1) { bmax.y = val; dirty = true; bEmpty = false; }
+			else if (i == 2) { bmax.z = val; dirty = true; bEmpty = false; }
 	}
     __device__
 	void setEmpty() {
@@ -57,16 +57,16 @@ public:
 	// Does this bounding box intersect the target?
     __device__
 		bool intersects(const BoundingBox &target) const {
-			return ((target.getMin()[0] - RAY_EPSILON <= bmax[0]) && (target.getMax()[0] + RAY_EPSILON >= bmin[0]) &&
-				(target.getMin()[1] - RAY_EPSILON <= bmax[1]) && (target.getMax()[1] + RAY_EPSILON >= bmin[1]) &&
-				(target.getMin()[2] - RAY_EPSILON <= bmax[2]) && (target.getMax()[2] + RAY_EPSILON >= bmin[2]));
+			return ((target.getMin().x - RAY_EPSILON <= bmax.x) && (target.getMax().x + RAY_EPSILON >= bmin.x) &&
+				(target.getMin().y - RAY_EPSILON <= bmax.y) && (target.getMax().y + RAY_EPSILON >= bmin.y) &&
+				(target.getMin().z - RAY_EPSILON <= bmax.z) && (target.getMax().z + RAY_EPSILON >= bmin.z));
 	}
 
 	// does the box contain this point?
     __device__
-	bool intersects(const Vec3d& point) const {
-		return ((point[0] + RAY_EPSILON >= bmin[0]) && (point[1] + RAY_EPSILON >= bmin[1]) && (point[2] + RAY_EPSILON >= bmin[2]) &&
-			(point[0] - RAY_EPSILON <= bmax[0]) && (point[1] - RAY_EPSILON <= bmax[1]) && (point[2] - RAY_EPSILON <= bmax[2]));
+	bool intersects(const Vec3f& point) const {
+		return ((point.x + RAY_EPSILON >= bmin.x) && (point.y + RAY_EPSILON >= bmin.y) && (point.z + RAY_EPSILON >= bmin.z) &&
+			(point.x - RAY_EPSILON <= bmax.x) && (point.y - RAY_EPSILON <= bmax.y) && (point.z - RAY_EPSILON <= bmax.z));
 	}
 
 	// if the ray hits the box, put the "t" value of the intersection
@@ -74,22 +74,22 @@ public:
 	// in tMax and return true, else return false.
 	// Using Kay/Kajiya algorithm.
     __device__
-	bool intersect(const ray& r, double& tMin, double& tMax) const {
-		Vec3d R0 = r.getPosition();
-		Vec3d Rd = r.getDirection();
+	bool intersect(const ray& r, float& tMin, float& tMax) const {
+		Vec3f R0 = r.getPosition();
+		Vec3f Rd = r.getDirection();
 		tMin = -1.0e308; // 1.0e308 is close to infinity... close enough for us!
 		tMax = 1.0e308;
-		double ttemp;
+		float ttemp;
 	
 		for (int currentaxis = 0; currentaxis < 3; currentaxis++) {
-			double vd = Rd[currentaxis];
+			float vd = Rd[currentaxis];
 			// if the ray is parallel to the face's plane (=0.0)
 			if( vd == 0.0 ) continue;
-			double v1 = bmin[currentaxis] - R0[currentaxis];
-			double v2 = bmax[currentaxis] - R0[currentaxis];
+			float v1 = bmin[currentaxis] - R0[currentaxis];
+			float v2 = bmax[currentaxis] - R0[currentaxis];
 			// two slab intersections
-			double t1 = v1/vd;
-			double t2 = v2/vd;
+			float t1 = v1/vd;
+			float t2 = v2/vd;
 			if ( t1 > t2 ) { // swap t1 & t2
 				ttemp = t1;
 				t1 = t2;
@@ -114,20 +114,20 @@ public:
 	}
 
     __device__
-	double area() {
+	float area() {
 		if (bEmpty) return 0.0;
 		else if (dirty) {
-			bArea = 2.0 * ((bmax[0] - bmin[0]) * (bmax[1] - bmin[1]) + (bmax[1] - bmin[1]) * (bmax[2] - bmin[2]) + (bmax[2] - bmin[2]) * (bmax[0] - bmin[0]));
+			bArea = 2.0 * ((bmax.x - bmin.x) * (bmax.y - bmin.y) + (bmax.y - bmin.y) * (bmax.z - bmin.z) + (bmax.z - bmin.z) * (bmax.x - bmin.x));
 			dirty = false;
 		}
 		return bArea;
 	}
 
     __device__
-	double volume() {
+	float volume() {
 		if (bEmpty) return 0.0;
 		else if (dirty) {
-			bVolume = ((bmax[0] - bmin[0]) * (bmax[1] - bmin[1]) * (bmax[2] - bmin[2]));
+			bVolume = ((bmax.x - bmin.x) * (bmax.y - bmin.y) * (bmax.z - bmin.z));
 			dirty = false;
 		}
 		return bVolume;

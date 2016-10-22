@@ -2,16 +2,25 @@
 #define NUM_BLOCKS 16
 #define BLOCK_WIDTH 1
 #include "tinyobjloader.h"
-#include "scene.h"
+#include "tris.h"
 
 //Device BVH
 class BVH_d {
     private:
-        const Scene_d& mScene;
+        unsigned int* mortonCodes;
+        unsigned int* object_ids;
+
+        // These are stored in the scene
+        int numTriangles;
+        Vec3f* vertices; 
+        BoundingBox* BBoxs;
+        TriangleIndices* t_indices;
+
 
     public:
-        BVH_d(const Scene_d& mScene) : mScene(mScene) {}
 
+        void setUp(Vec3f* mvertices, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int numTriangles);
+        ~BVH_d();
         
 
 };

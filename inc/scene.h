@@ -2,19 +2,13 @@
 #include "vec.h"
 #include "tinyobjloader.h"
 #include <vector>
+#include "tris.h"
 
 using namespace tinyobj;
 using std::vector;
 using std::cout;
 using std::endl;
 
-// A triangle is 3 Vertex Indices
-// This just makes it easier to access
-struct TriangleIndices{
-        index_t a;
-        index_t b;
-        index_t c;
-}
 
 //Our mesh is always 3 vertices per face
 // A trimesh just knows the indices of its vertices/normals/

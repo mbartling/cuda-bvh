@@ -11,7 +11,7 @@ void Scene_d::computeBoundingBoxes(){
     int threadsPerBlock = 256;
     int blocksPerGrid =
         (N + threadsPerBlock - 1) / threadsPerBlock;
-    VecAdd<<<blocksPerGrid, threadsPerBlock>>>(numTriangles, vertices, t_indices, BBoxs);
+    computeBoundingBoxes_kernel<<<blocksPerGrid, threadsPerBlock>>>(numTriangles, vertices, t_indices, BBoxs);
 }
 
 
