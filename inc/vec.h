@@ -19,10 +19,10 @@ class Vec3f{
         explicit Vec3f(float a): x(a), y(a), z(a) {}
         
         __host__ __device__
-        Vec3f(float* a) : x(a[0]), y(a[1]), z(a[2]) {}
+        explicit Vec3f(float* a) : x(a[0]), y(a[1]), z(a[2]) {}
 
         __host__ __device__
-        Vec3f(void): x(0), y(0), z(0) {}
+        Vec3f(void): x(0.0), y(0.0), z(0.0) {}
 
         __host__ __device__
         Vec3f& operator = (float a){ x = a; y = a; z = a; return *this; }
@@ -70,7 +70,7 @@ Vec3f operator - (const Vec3f& a, float b){
 
 __host__ __device__ __inline__
 Vec3f operator + (const Vec3f& a, float b){
-    return Vec3f(a.x + b, a.+b, a.z+b);
+    return Vec3f(a.x + b, a.y+b, a.z+b);
 }
 
 __host__ __device__ __inline__
@@ -85,7 +85,7 @@ Vec3f operator - (float b, const Vec3f& a){
 
 __host__ __device__ __inline__
 Vec3f operator + (float b, const Vec3f& a){
-    return Vec3f(a.x + b, a.+b, a.z+b);
+    return Vec3f(a.x + b, a.y+b, a.z+b);
 }
     __host__ __device__ __inline__
 Vec3f operator / (const Vec3f& a, float b){
@@ -123,7 +123,7 @@ float rnorm(const Vec3f& a){
 
 __host__ __device__ __inline__
 bool isZero(const Vec3f& a){
-    retrun a.x == 0 && a.y == 0 && a.z == 0;
+    return (a.x == 0) && (a.y == 0) && (a.z == 0);
 }
 __device__ __inline__
 Vec3f maximum(const Vec3f& a, const Vec3f& b){
@@ -154,6 +154,9 @@ class Vec4f{
 
         __host__ __device__
         Vec4f(float a): x(a), y(a), z(a), w(a) {}
+        
+        __host__ __device__
+        Vec4f(): x(0.0), y(0.0), z(0.0), w(0.0) {}
 
         __host__ __device__
         Vec4f& operator = (float a){ x = a; y = a; z = a; w = a; return *this; }
@@ -213,7 +216,7 @@ class Mat3f{
               float zx, float zy, float zz): x(xx,yy,zz), y(yx, yy, yz), z(zx, zy, zz) {}
         
         __host__ __device__
-        Mat3f(void) : x(0), y(0), z(0) {}
+        Mat3f(void) : x(0.0), y(0.0), z(0.0) {}
         
         __host__ __device__
         Mat3f(Vec3f x, Vec3f y, Vec3f z) : x(x), y(y), z(z) {}
@@ -243,13 +246,25 @@ class Mat4f{
         Vec4f w;
 
         __host__ __device__
-        Mat4f(float xx, float xy, float xz, float xw
-              float yx, float yy, float yz, float yw
+        Mat4f(float xx, float xy, float xz, float xw,
+              float yx, float yy, float yz, float yw,
               float zx, float zy, float zz, float zw): x(xx,yy,zz,zw), y(yx, yy, yz,yw), z(zx, zy, zz, zw) {}
         
         
         __host__ __device__
-        Mat4f(Vec4f x, Vec4f y, Vec4f z, Vec4f w) x(x), y(y), z(z), w(w) {}
+        Mat4f(const Vec4f& x, const Vec4f& y, const Vec4f& z, const Vec4f& w) : x(x), y(y), z(z), w(w) {}
+        
+        __host__ __device__
+        Mat4f(): x(), y(), z(), w() {}
+        
+        __host__ __device__
+        Mat4f& operator *= (float d){
+            x *= d;
+            y *= d;
+            z *= d;
+            w *= d;
+            return *this;
+        }
 
 };
 
@@ -284,22 +299,22 @@ Mat4f getInverse(const Mat4f& a)
 
     Mat4f b;
 
-    b.x = (( a.y.y * c5 - a.y.z * c4 + a.y.w * c3) 
+    b.x = Vec4f(( a.y.y * c5 - a.y.z * c4 + a.y.w * c3) 
           ,(-a.x.y * c5 + a.x.z * c4 - a.x.w * c3) 
           ,( a.w.y * s5 - a.w.z * s4 + a.w.w * s3) 
           ,(-a.z.y * s5 + a.z.z * s4 - a.z.w * s3)) ;
 
-    b.y = ((-a.y.x * c5 + a.y.z * c2 - a.y.w * c1) 
+    b.y = Vec4f((-a.y.x * c5 + a.y.z * c2 - a.y.w * c1) 
           ,( a.x.x * c5 - a.x.z * c2 + a.x.w * c1) 
           ,(-a.w.x * s5 + a.w.z * s2 - a.w.w * s1) 
           ,( a.z.x * s5 - a.z.z * s2 + a.z.w * s1)) ;
 
-    b.z = (( a.y.x * c4 - a.y.y * c2 + a.y.w * c0) 
+    b.z = Vec4f(( a.y.x * c4 - a.y.y * c2 + a.y.w * c0) 
           ,(-a.x.x * c4 + a.x.y * c2 - a.x.w * c0) 
           ,( a.w.x * s4 - a.w.y * s2 + a.w.w * s0) 
           ,(-a.z.x * s4 + a.z.y * s2 - a.z.w * s0)) ;
 
-    b.w = ((-a.y.x * c3 + a.y.y * c1 - a.y.z * c0) 
+    b.w = Vec4f((-a.y.x * c3 + a.y.y * c1 - a.y.z * c0) 
           ,( a.x.x * c3 - a.x.y * c1 + a.x.z * c0) 
           ,(-a.w.x * s3 + a.w.y * s1 - a.w.z * s0) 
           ,( a.z.x * s3 - a.z.y * s1 + a.z.z * s0)) ;
