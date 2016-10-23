@@ -1,10 +1,17 @@
 #include "scene.h"
 
+// Declarations
 __global__ 
 void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndices* t_indices, BoundingBox* BBoxs);
+
 __device__
 BoundingBox computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec3f& c);
 
+__global__
+void AverageSuperSamplingKernel(Vec3f* smallImage, Vec3f* deviceImage, int imageWidth, int imageHeight, int superSampling);
+
+//============================
+//
 void Scene_d::computeBoundingBoxes(){
     // Invoke kernel
     int N = numTriangles;
@@ -14,6 +21,17 @@ void Scene_d::computeBoundingBoxes(){
     computeBoundingBoxes_kernel<<<blocksPerGrid, threadsPerBlock>>>(numTriangles, vertices, t_indices, BBoxs);
 }
 
+void AverageSuperSampling(Vec3f* smallImage, i
+                          Vec3f* deviceImage, 
+                          int imageWidth, 
+                          int imageHeight, 
+                          int superSampling)
+{
+    int blockSize = 32;
+    dim3 blockDim(blockSize, blockSize); //A thread block is 32x32 pixels
+    dim3 gridDim(imageWidth/blockDim.x, imageHeight/blockDim.y);
+    AverageSuperSamplingKernel<<<gridDim, blockDim>>>(smallImage, deviceImage, imageWidth, imageHeight, superSampling);
+}
 
 __global__ 
 void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndices* t_indices, BoundingBox* BBoxs){
@@ -42,3 +60,25 @@ __device__
 bool Scene_d::intersect(const ray& r, isect& i){
     return bvh.intersect(r, i, this);
 }
+
+__global__
+void AverageSuperSamplingKernel(Vec3f* smallImage, Vec3f* deviceImage, int imageWidth, int imageHeight, int superSampling)
+{
+    int pixelX = blockIdx.x*blockDim.x + threadIdx.x;
+    int pixelY = blockIdx.y*blockDim.y + threadIdx.y;
+    int pixelIdx = pixelY*imageWidth + pixelX;
+    
+    Vec3f mSum;
+    for(int i = 0; i < superSampling; i++){
+         for(int j = 0; j < superSampling; j++){
+            int idxX = pixelX*superSampling + j;
+            int idxY = pixelY*superSampling + i;
+            int idx = idxY*superSampling*imageWidth + idxX;
+            mSum += deviceImage[idx];
+        }
+    }
+
+    mSum /= float(superSampling);
+    smallImage[pixelIdx] = mSum;
+}
+

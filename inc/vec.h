@@ -69,9 +69,15 @@ void normalize(Vec3f& a){
     float sqinv = rnorm3df(a.x, a.y, a.z);
     a *= sqinv;
 }
+
 __host__ __device__ __inline__
 float norm(const Vec3f& a){
     return norm3df(a.x, a.y, a.z);
+}
+
+__host__ __device__ __inline__
+float rnorm(const Vec3f& a){
+    return rnorm3df(a.x, a.y, a.z);
 }
 
 __host__ __device__ __inline__
@@ -182,4 +188,27 @@ Vec3f multAT_x(const Mat3f& A, const Vec3f& f){
 __host__ __device__ __inline__
 Vec3f multxT_A(const Vec3f& f, const Mat3f& A){
     return multAT_x(A, f); // Same value except this one should be treated as transposed
+}
+
+class Mat4f{
+    public:
+        Vec4f x; //Row 1
+        Vec4f y; //Row 2
+        Vec4f z;
+        Vec4f w;
+
+        __host__ __device__
+        Mat4f(float xx, float xy, float xz, float xw
+              float yx, float yy, float yz, float yw
+              float zx, float zy, float zz, float zw): x(xx,yy,zz,zw), y(yx, yy, yz,yw), z(zx, zy, zz, zw) {}
+        
+        
+        __host__ __device__
+        Mat4f(Vec4f x, Vec4f y, Vec4f z, Vec4f w) x(x), y(y), z(z), w(w) {}
+
+};
+
+__host__ __device__ __inline__
+Vec3f operator * (const Mat4f& a, const Vec3f& b){
+
 }

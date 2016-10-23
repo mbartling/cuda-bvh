@@ -38,14 +38,21 @@ Scene_h::LoadObj(string filename){
 }
 
 Scene_h& Scene_h::operator = (const Scene_d& deviceScene){
-    cudaMemcpy(image, deviceScene.image, imageWidth*imageHeight*sizeof(Vec4f), cudaMemcpyDeviceToHost);
+    Vec3f* smallImage;
+    cudaMalloc(smallImage, imageWidth*imageHeight*sizeof(Vec3f));
+
+    AverageSuperSampling(smallImage, deviceScene.image, imageWidth, imageHeight, superSampling);
+    
+    cudaMemcpy(image, smallImage, imageWidth*imageHeight*sizeof(Vec3f), cudaMemcpyDeviceToHost);
+    
+    cudaFree(smallImage);
 }
 
 Scene_d& Scene_d::operator = (const Scene_h& hostScene){
     numVertices = hostScene.mAttributes.vertices.size();
     numTriangles = hostScene.t_indices.size();
-    imageWidth = hostScene.imageWidth;
-    imageHeight = hostScene.imageHeight;
+    imageWidth = hostScene.imageWidth * hostScene.superSampling;
+    imageHeight = hostScene.imageHeight * hostScene.superSampling;
 
     //Allocate Space for everything
     cudaMalloc(vertices, numVertices*sizeof(float));
@@ -54,11 +61,11 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
     cudaMalloc(BBoxs, numTriangles*sizeof(BoundingBox));
     cudaMalloc(t_indices, numTriangles*sizeof(TriangleIndices));
 
-    cudaMalloc(image, imageWidth*imageHeight*sizeof(float4));
+    cudaMalloc(image, imageWidth*imageHeight*sizeof(float3));
 
     //Copy stuff
-    cudaMemcpy(vertices, hostScene.mAttributes.vertices.data(), numVertices*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(normals, hostScene.mAttributes.normals.data(), numVertices*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(vertices, hostScene.mAttributes.vertices.data(), numVertices*sizeof(Vec3f), cudaMemcpyHostToDevice);
+    cudaMemcpy(normals, hostScene.mAttributes.normals.data(), numVertices*sizeof(Vec3f), cudaMemcpyHostToDevice);
     cudaMemcpy(t_indices, hostScene.t_indices.data(), numTriangles*sizeof(TriangleIndices), cudaMemcpyHostToDevice);
 
     computeBoundingBoxes();

@@ -27,12 +27,13 @@ class Scene_h{
         vector<int> material_ids;
         int imageWidth;
         int imageHeight;
+        int superSampling;
         
         friend class Scene_d;
 
     public:
-        Scene_h(): imageWidth(512), imageHeight(512) {}
-        Scene_h(int imageWidth, int imageHeight): imageWidth(imageWidth), imageHeight(imageHeight) {}
+        Scene_h(): imageWidth(512), imageHeight(512), superSampling(1) {}
+        Scene_h(int imageWidth, int imageHeight, int superSampling): imageWidth(imageWidth), imageHeight(imageHeight), superSampling(superSampling) {}
 
         void LoadObj(string filename);
 
@@ -75,4 +76,6 @@ class Scene_d{
         ~Scene_d();
 
 };
+
+void AverageSuperSampling(Vec3f* smallImage, Vec3f* deviceImage, int imageWidth, int imageHeight, int superSampling);
 
