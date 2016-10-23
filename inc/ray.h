@@ -33,7 +33,7 @@ class ray {
         { p = other.p; d = other.d; return *this; }
 
         __device__
-        Vec3f at( double t ) const
+        Vec3f at( float t ) const
         { return p + (t*d); }
 
         __device__
@@ -48,7 +48,7 @@ class ray {
 
 // The description of an intersection point.
 
-
+__device__
 Vec3f CosWeightedRandomHemiDir2(Vec3f n);
 
 

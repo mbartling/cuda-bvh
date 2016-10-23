@@ -6,6 +6,7 @@
 #include "bbox.h"
 //#include "scene.h"
 
+class Scene_d;
 
 struct Node{
     Node* childA;
@@ -56,6 +57,9 @@ class BVH_d {
 
         void setupLeafNodes();
         void buildTree();
+
+        __device__
+        bool intersect(const ray& r, isect& i, Scene_d* scene);
         
         
 
