@@ -69,6 +69,8 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
     cudaMemcpy(t_indices, hostScene.t_indices.data(), numTriangles*sizeof(TriangleIndices), cudaMemcpyHostToDevice);
 
     computeBoundingBoxes();
+    
+
 
     bvh.setUp(vertices, BBoxs, t_indices, numTriangles);
 

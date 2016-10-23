@@ -22,7 +22,7 @@ Vec3f Material::shade(Scene_d* scene, const ray& r, const isect& i){
 
 
     Vec3d Rdir = -2.0*(lightDir*i.N)*i.N + lightDir;
-    Rdir.normalize(); 
+    normalize(Rdir); 
     float tmp = Rdir*V;
 
     tmp =  powf(max(0.0, tmp), shininess);

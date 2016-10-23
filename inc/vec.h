@@ -209,6 +209,56 @@ class Mat4f{
 };
 
 __host__ __device__ __inline__
+float operator * (const Vec4f& a, const Vec3f& b){
+    return a.x*b.x + a.y*b.y + a.z*b.z + a.w;
+}
+__host__ __device__ __inline__
 Vec3f operator * (const Mat4f& a, const Vec3f& b){
+    return Vec3f(a.x*b, a.y*b, a.z*b);
+}
 
+__host__ __device__
+Mat4f getInverse(const Mat4f& a)
+{
+    float s0 = a.x.x * a.y.y - a.y.x * a.x.y;
+    float s1 = a.x.x * a.y.z - a.y.x * a.x.z;
+    float s2 = a.x.x * a.y.w - a.y.x * a.x.w;
+    float s3 = a.x.y * a.y.z - a.y.y * a.x.z;
+    float s4 = a.x.y * a.y.w - a.y.y * a.x.w;
+    float s5 = a.x.z * a.y.w - a.y.z * a.x.w;
+
+    float c5 = a.z.z * a.w.w - a.w.z * a.z.w;
+    float c4 = a.z.y * a.w.w - a.w.y * a.z.w;
+    float c3 = a.z.y * a.w.z - a.w.y * a.z.z;
+    float c2 = a.z.x * a.w.w - a.w.x * a.z.w;
+    float c1 = a.z.x * a.w.z - a.w.x * a.z.z;
+    float c0 = a.z.x * a.w.y - a.w.x * a.z.y;
+
+    // Should check for 0 determinant
+    float invdet = 1.0 / (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+
+    Mat4f b;
+
+    b.x = (( a.y.y * c5 - a.y.z * c4 + a.y.w * c3) 
+          ,(-a.x.y * c5 + a.x.z * c4 - a.x.w * c3) 
+          ,( a.w.y * s5 - a.w.z * s4 + a.w.w * s3) 
+          ,(-a.z.y * s5 + a.z.z * s4 - a.z.w * s3)) ;
+
+    b.y = ((-a.y.x * c5 + a.y.z * c2 - a.y.w * c1) 
+          ,( a.x.x * c5 - a.x.z * c2 + a.x.w * c1) 
+          ,(-a.w.x * s5 + a.w.z * s2 - a.w.w * s1) 
+          ,( a.z.x * s5 - a.z.z * s2 + a.z.w * s1)) ;
+
+    b.z = (( a.y.x * c4 - a.y.y * c2 + a.y.w * c0) 
+          ,(-a.x.x * c4 + a.x.y * c2 - a.x.w * c0) 
+          ,( a.w.x * s4 - a.w.y * s2 + a.w.w * s0) 
+          ,(-a.z.x * s4 + a.z.y * s2 - a.z.w * s0)) ;
+
+    b.w = ((-a.y.x * c3 + a.y.y * c1 - a.y.z * c0) 
+          ,( a.x.x * c3 - a.x.y * c1 + a.x.z * c0) 
+          ,(-a.w.x * s3 + a.w.y * s1 - a.w.z * s0) 
+          ,( a.z.x * s3 - a.z.y * s1 + a.z.z * s0)) ;
+    
+    b*= invdet;
+    return b;
 }
