@@ -1,5 +1,33 @@
 #include "scene.h"
 
+struct minAccessor{
+    
+    __host__ __device__
+    Vec3f operator () (const BoundingBox& a){
+        return a.bmin;
+    }
+};
+
+struct minFunctor{
+    __host__ __device__
+    Vec3f operator () (const Vec3f& a, const Vec3f& b){
+        return minimum(a,b);
+    }
+};
+struct maxAccessor{
+    
+    __host__ __device__
+    Vec3f operator () (const BoundingBox& a){
+        return a.bmax;
+    }
+};
+
+struct maxFunctor{
+    __host__ __device__
+    Vec3f operator () (const Vec3f& a, const Vec3f& b){
+        return maximum(a,b);
+    }
+};
 __global__ 
 void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndices* t_indices, BoundingBox* BBoxs);
 __device__
@@ -12,6 +40,14 @@ void Scene_d::computeBoundingBoxes(){
     int blocksPerGrid =
         (N + threadsPerBlock - 1) / threadsPerBlock;
     computeBoundingBoxes_kernel<<<blocksPerGrid, threadsPerBlock>>>(numTriangles, vertices, t_indices, BBoxs);
+}
+
+
+void Scene_d::findMinMax(Vec3f& mMin, Vec3f mMax){
+
+    thrust::device_ptr<BoundingBox> dvp(BBoxs);
+    mMin = thrust::transform_reduce(dvp, dvp + numTriangles, minAccessor(), Vec3f(1e9, 1e9, 1e9), minFunctor);
+    mMax = thrust::transform_reduce(dvp, dvp + numTriangles, maxAccessor(),Vec3f(-1e9, -1e9, -1e9), maxFunctor);
 }
 
 

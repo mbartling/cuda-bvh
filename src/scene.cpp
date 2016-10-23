@@ -63,6 +63,9 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
 
     computeBoundingBoxes();
 
+    Vec3f mMin;
+    Vec3f mMax;
+    findMinMax(mMin, mMax);
     bvh.setUp(vertices, BBoxs, t_indices, numTriangles);
 
 
