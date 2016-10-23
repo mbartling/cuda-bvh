@@ -51,9 +51,9 @@ class Scene_h{
 class Scene_d{
     private:
         int numVertices;
-        int numTriangles;
         int imageWidth;
         int imageHeight;
+        int numTriangles;
 
         Vec3f* vertices;
         Vec3f* normals;

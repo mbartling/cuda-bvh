@@ -1,4 +1,5 @@
 #include "scene.h"
+#include <stdio.h>
 
 __global__ 
 void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndices* t_indices, BoundingBox* BBoxs);
@@ -12,6 +13,8 @@ void Scene_d::computeBoundingBoxes(){
     int blocksPerGrid =
         (N + threadsPerBlock - 1) / threadsPerBlock;
     computeBoundingBoxes_kernel<<<blocksPerGrid, threadsPerBlock>>>(numTriangles, vertices, t_indices, BBoxs);
+    //cudaDeviceSynchronize();
+
 }
 
 
@@ -21,6 +24,9 @@ void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndi
     if (idx > numTriangles) return;
 
     TriangleIndices t_idx = t_indices[idx];
+    printf("idx(%d), a(%d, %d, %d)\n" , idx, vertices[t_idx.a.vertex_index].x,
+                                     vertices[t_idx.a.vertex_index].y,
+                                     vertices[t_idx.a.vertex_index].z);
 
     BBoxs[idx] = computeTriangleBoundingBox(vertices[t_idx.a.vertex_index],vertices[t_idx.b.vertex_index],vertices[t_idx.c.vertex_index]);
 

@@ -2,6 +2,7 @@
 #include "bvh.h"
 #include <thrust/sort.h>
 #include <thrust/device_ptr.h>
+#include "scene.h"
 
 __global__ void hello()
 {
@@ -72,8 +73,11 @@ void BVH_d::buildTree(){
     setupLeafNodesKernel<<<blocksPerGrid, threadsPerBlock>>>(object_ids, leafNodes, numTriangles);
 
 }
-void bvh(void)
+void bvh(Scene_h& scene_h)
 {
+    Scene_d scene_d;
+    scene_d = scene_h;
+    
     //launch the kernel
     hello<<<NUM_BLOCKS, BLOCK_WIDTH>>>();
 
@@ -91,12 +95,13 @@ __global__
 void computeMortonCodesKernel(unsigned int* mortonCodes, unsigned int* object_ids, 
         BoundingBox* BBoxs, int numTriangles){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx > numTriangles)
+    if (idx >= numTriangles)
         return;
 
     object_ids[idx] = idx;
     Vec3f centroid = computeCentroid(BBoxs[idx]);
     mortonCodes[idx] = morton3D(centroid.x, centroid.y, centroid.z);
+    printf("in computeMortonCodesKernel: idx->%d , mortonCode->%d, centroid(%d,%d,%d)\n  ", idx, mortonCodes[idx], centroid.x, centroid.y, centroid.z);
 
 };
 
@@ -105,7 +110,7 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
         LeafNode* leafNodes, int numTriangles){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx > numTriangles)
+    if (idx >= numTriangles)
         return;
     leafNodes[idx].isLeaf = true;
     leafNodes[idx].object_id = sorted_object_ids[idx];

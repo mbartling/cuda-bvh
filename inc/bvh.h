@@ -4,6 +4,7 @@
 #include "tiny_obj_loader.h"
 #include "tris.h"
 #include "bbox.h"
+//#include "scene.h"
 
 
 struct Node{
@@ -59,5 +60,5 @@ class BVH_d {
         
 
 };
-
-void bvh(void);
+class Scene_h;
+void bvh(Scene_h& scene_h);
