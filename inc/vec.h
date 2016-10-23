@@ -28,7 +28,7 @@ class Vec3f{
         Vec3f& operator = (float a){ x = a; y = a; z = a; return *this; }
 
         __host__ __device__
-        Vec3f& operator / (float a){ x /= a; y /= a; z /= a; return *this; }
+        Vec3f& operator /= (float a){ x /= a; y /= a; z /= a; return *this; }
         
         __host__ __device__
         Vec3f operator - (){ return Vec3f(-x, -y, -z); }
@@ -43,23 +43,57 @@ class Vec3f{
 };
 
 __host__ __device__ __inline__
-float operator * (const Vec3f& a, const Vec3f b){
+float operator * (const Vec3f& a, const Vec3f& b){
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
 __host__ __device__ __inline__
 
-Vec3f operator + (const Vec3f& a, const Vec3f b){
+Vec3f operator + (const Vec3f& a, const Vec3f& b){
     return Vec3f(a.x + b.x , a.y + b.y , a.z + b.z);
 }
 
 __host__ __device__ __inline__
-Vec3f operator - (const Vec3f& a, const Vec3f b){
+Vec3f operator - (const Vec3f& a, const Vec3f& b){
     return Vec3f(a.x - b.x , a.y - b.y , a.z - b.z);
 }
 
 __host__ __device__ __inline__
-Vec3f operator % (const Vec3f& a, const Vec3f b){
+Vec3f operator * (const Vec3f& a, float b){
+    return Vec3f(a.x*b, a.y*b, a.z*b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator - (const Vec3f& a, float b){
+    return Vec3f(a.x - b, a.y -b, a.z -b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator + (const Vec3f& a, float b){
+    return Vec3f(a.x + b, a.+b, a.z+b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator * (float b, const Vec3f& a){
+    return Vec3f(a.x*b, a.y*b, a.z*b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator - (float b, const Vec3f& a){
+    return Vec3f(a.x - b, a.y -b, a.z -b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator + (float b, const Vec3f& a){
+    return Vec3f(a.x + b, a.+b, a.z+b);
+}
+    __host__ __device__ __inline__
+Vec3f operator / (const Vec3f& a, float b){
+    return Vec3f(a.x/b, a.y/b, a.z/b);
+}
+
+__host__ __device__ __inline__
+Vec3f operator % (const Vec3f& a, const Vec3f& b){
     return Vec3f(a.x * b.x , a.y * b.y , a.z * b.z);
 }
 //Cross Product
@@ -197,7 +231,10 @@ __host__ __device__ __inline__
 Vec3f multxT_A(const Vec3f& f, const Mat3f& A){
     return multAT_x(A, f); // Same value except this one should be treated as transposed
 }
-
+__host__ __device__ __inline__
+Vec3f operator * (const Mat3f& a, const Vec3f& f){
+    return Vec3f(a.x*f, a.y*f, a.z*f);
+}
 class Mat4f{
     public:
         Vec4f x; //Row 1
