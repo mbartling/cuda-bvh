@@ -27,7 +27,8 @@ void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndi
     return;
 }
 
-__device__ computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec3f& c){
+__device__ 
+BoundingBox computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec3f& c){
     BoundingBox bbox;
     BoundingBox localbounds;
     localbounds.setMax(maximum( a, b));
@@ -38,4 +39,4 @@ __device__ computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec3
     return localbounds;
 }
 
-}
+

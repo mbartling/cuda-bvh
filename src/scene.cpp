@@ -2,7 +2,7 @@
 
 
 // Load the OBJ and add all the triangles to a linear array
-Scene_h::LoadObj(string filename){
+void Scene_h::LoadObj(string filename){
     vector<shape_t> shapes;
     vector<material_t> materials;
     string err;
@@ -22,7 +22,7 @@ Scene_h::LoadObj(string filename){
 
         //For each Triangle Add the 
         size_t index_offset = 0;
-        for(size_t f = 0; f < shapes[s].mes.num_face_vertices.size(); f++){
+        for(size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++){
             TriangleIndices index;
             index.a = shapes[s].mesh.indices[index_offset + 0];
             index.b = shapes[s].mesh.indices[index_offset + 1];
@@ -38,7 +38,7 @@ Scene_h::LoadObj(string filename){
 }
 
 Scene_h& Scene_h::operator = (const Scene_d& deviceScene){
-    cudaMemcpy(image, deviceScene.image, imageWidth*imageHeight*sizeof(Vec4f), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&image, deviceScene.image, imageWidth*imageHeight*sizeof(Vec4f), cudaMemcpyDeviceToHost);
 }
 
 Scene_d& Scene_d::operator = (const Scene_h& hostScene){
@@ -48,13 +48,13 @@ Scene_d& Scene_d::operator = (const Scene_h& hostScene){
     imageHeight = hostScene.imageHeight;
 
     //Allocate Space for everything
-    cudaMalloc(vertices, numVertices*sizeof(float));
-    cudaMalloc(normals, numVertices*sizeof(float));
+    cudaMalloc(&vertices, numVertices*sizeof(float));
+    cudaMalloc(&normals, numVertices*sizeof(float));
 
-    cudaMalloc(BBoxs, numTriangles*sizeof(BoundingBox));
-    cudaMalloc(t_indices, numTriangles*sizeof(TriangleIndices));
+    cudaMalloc(&BBoxs, numTriangles*sizeof(BoundingBox));
+    cudaMalloc(&t_indices, numTriangles*sizeof(TriangleIndices));
 
-    cudaMalloc(image, imageWidth*imageHeight*sizeof(float4));
+    cudaMalloc(&image, imageWidth*imageHeight*sizeof(float4));
 
     //Copy stuff
     cudaMemcpy(vertices, hostScene.mAttributes.vertices.data(), numVertices*sizeof(float), cudaMemcpyHostToDevice);

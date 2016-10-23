@@ -1,8 +1,9 @@
 #pragma once
 #define NUM_BLOCKS 16
 #define BLOCK_WIDTH 1
-#include "tinyobjloader.h"
+#include "tiny_obj_loader.h"
 #include "tris.h"
+#include "bbox.h"
 
 
 struct Node{
@@ -18,7 +19,7 @@ struct Node{
 struct LeafNode : public Node {
     unsigned int object_id;
     
-    _device__
+    __device__
     LeafNode() {
         this->isLeaf = true;
     }

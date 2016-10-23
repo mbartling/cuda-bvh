@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 using namespace tinyobj;
 using std::vector;
@@ -11,4 +12,4 @@ struct TriangleIndices{
         index_t a;
         index_t b;
         index_t c;
-}
+};

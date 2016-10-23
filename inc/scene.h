@@ -1,13 +1,18 @@
 #pragma once
 #include "vec.h"
-#include "tinyobjloader.h"
+#include "tiny_obj_loader.h"
 #include <vector>
+#include <string>
 #include "tris.h"
+#include "bbox.h"
+#include "bvh.h"
+#include <stdlib.h>
 
 using namespace tinyobj;
 using std::vector;
 using std::cout;
 using std::endl;
+using std::string;
 
 
 
@@ -74,6 +79,7 @@ class Scene_d{
 //Our mesh is always 3 vertices per face
 // A trimesh just knows the indices of its vertices/normals/
 // This trimesh is probably not needed
+/*
 class TriMesh{
     private:
         //On Device data
@@ -98,3 +104,4 @@ class TriMesh{
         }
 
 };
+*/

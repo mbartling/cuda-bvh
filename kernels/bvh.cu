@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "bvh.h"
 #include <thrust/sort.h>
+#include <thrust/device_ptr.h>
 
 __global__ void hello()
 {
@@ -26,6 +27,9 @@ int findSplit(  unsigned int* sortedMortonCodes,
         int first,
         int last);
 
+__device__
+int2 determineRange(unsigned int* sortedMortonCodes, int numTriangles, int idx);
+
 __global__ 
 void computeMortonCodesKernel(unsigned int* mortonCodes, unsigned int* object_ids, 
         BoundingBox* BBoxs, int numTriangles);
@@ -36,7 +40,7 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
 __global__ 
 void generateHierarchyKernel(unsigned int* mortonCodes,
         unsigned int* sorted_object_ids, 
-        InternalNodes* internalNodes,
+        InternalNode* internalNodes,
         LeafNode* leafNodes, int numTriangles);
 
 void BVH_d::computeMortonCodes(){
@@ -103,14 +107,14 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
 
     if (idx > numTriangles)
         return;
-    leafNodes[idx]->isLeaf = true;
-    leafNodes[idx]->object_id = sorted_object_ids[idx];
+    leafNodes[idx].isLeaf = true;
+    leafNodes[idx].object_id = sorted_object_ids[idx];
 }
 
     __global__ 
 void generateHierarchyKernel(unsigned int* sortedMortonCodes,
         unsigned int* sorted_object_ids, 
-        InternalNodes* internalNodes,
+        InternalNode* internalNodes,
         LeafNode* leafNodes, int numTriangles)
 {
 
@@ -118,7 +122,8 @@ void generateHierarchyKernel(unsigned int* sortedMortonCodes,
 
     if (idx > numTriangles - 1 )
         return;
-    InternalNodes[idx]->isLeaf = false;
+
+    internalNodes[idx].isLeaf = false ;
 
     int2 range = determineRange(sortedMortonCodes, numTriangles, idx);
     int first = range.x;
@@ -195,6 +200,12 @@ int findSplit( unsigned int* sortedMortonCodes,
     while (step > 1);
 
     return split;
+}
+
+__device__
+int2 determineRange(unsigned int* sortedMortonCodes, int numTriangles, int idx)
+{
+   return make_int2(0,0);
 }
     __device__
 unsigned int expandBits(unsigned int v)

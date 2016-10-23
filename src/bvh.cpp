@@ -6,11 +6,11 @@ void BVH_d::setUp(Vec3f* mvertices, BoundingBox* mBBoxs, TriangleIndices* mt_ind
     BBoxs = mBBoxs;
     t_indices = mt_indices;
 
-    cudaMalloc(mortonCodes, numTriangles*sizeof(unsigned int));
-    cudaMalloc(object_ids, numTriangles*sizeof(unsigned int));
+    cudaMalloc(&mortonCodes, numTriangles*sizeof(unsigned int));
+    cudaMalloc(&object_ids, numTriangles*sizeof(unsigned int));
     
-    cudaMalloc(leafNodes, numTriangles*sizeof(LeafNode));
-    cudaMalloc(internalNodes, (numTriangles - 1)*sizeof(InternalNode));
+    cudaMalloc(&leafNodes, numTriangles*sizeof(LeafNode));
+    cudaMalloc(&internalNodes, (numTriangles - 1)*sizeof(InternalNode));
 
     // Set up for the BVH Build
     computeMortonCodes();
