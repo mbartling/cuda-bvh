@@ -105,6 +105,8 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
         return;
     leafNodes[idx]->isLeaf = true;
     leafNodes[idx]->object_id = sorted_object_ids[idx];
+    leafNodes[idx]->childA = nullptr;
+    leafNodes[idx]->childB = nullptr;
 }
 
     __global__ 
@@ -219,3 +221,7 @@ unsigned int morton3D(float x, float y, float z)
     unsigned int zz = expandBits((unsigned int)z);
     return xx * 4 + yy * 2 + zz;
 }
+__device__
+ bool intersect(const ray& r, isect& i, Scene_d* scene){
+
+ }

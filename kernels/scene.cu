@@ -38,4 +38,7 @@ __device__ computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec3
     return localbounds;
 }
 
+__device__
+bool Scene_d::intersect(const ray& r, isect& i){
+    return bvh.intersect(r, i, this);
 }

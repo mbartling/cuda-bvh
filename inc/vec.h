@@ -16,7 +16,10 @@ class Vec3f{
         Vec3f(float x, float y): x(x), y(y) {}
 
         __host__ __device__
-        Vec3f(float a): x(a), y(a), z(a) {}
+        explicit Vec3f(float a): x(a), y(a), z(a) {}
+        
+        __host__ __device__
+        Vec3f(float* a) : x(a[0]), y(a[1]), z(a[2]) {}
 
         __host__ __device__
         Vec3f& operator = (float a){ x = a; y = a; z = a; return *this; }
@@ -29,6 +32,7 @@ class Vec3f{
         
         __host__ __device__
         Vec3f& operator %= (const Vec3f& a){ x *= a.x; y *= a.y; z *= a.z; return *this; }
+
 
 };
 
@@ -52,6 +56,13 @@ __host__ __device__ __inline__
 Vec3f operator % (const Vec3f& a, const Vec3f b){
     return Vec3f(a.x * b.x , a.y * b.y , a.z * b.z);
 }
+//Cross Product
+__host__ __device__ __inline__
+Vec3f operator ^ (const Vec3f& a, const Vec3f& b){
+    return Vec3f(a.y*b.z - a.z*b.y,
+                 a.z*b.x - a.x*b.z,
+                 a.x*b.y - a.y*b.x);
+}
 
 __host__ __device__ __inline__
 void normalize(Vec3f& a){
@@ -63,6 +74,10 @@ float norm(const Vec3f& a){
     return norm3df(a.x, a.y, a.z);
 }
 
+__host__ __device__ __inline__
+bool isZero(const Vec3f& a){
+    retrun a.x == 0 && a.y == 0 && a.z == 0;
+}
 __device__ __inline__
 Vec3f maximum(const Vec3f& a, const Vec3f& b){
     return Vec3f(fmaxf(a.x, b.x), fmaxf(a.y, b.y), fmaxf(a.z, b.z));
