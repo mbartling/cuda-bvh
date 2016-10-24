@@ -1,8 +1,10 @@
 #pragma once
 #include "common.h"
 #include "ray.h"
+#include "vec.h"
 
 class BoundingBox {
+    public:
 
     bool bEmpty;
     bool dirty;
@@ -13,50 +15,50 @@ class BoundingBox {
 
     public:
 
-    __device__
+     __host__ __device__
         BoundingBox() : bEmpty(true) {}
 
-    __device__
+    __host__ __device__
         BoundingBox(Vec3f bMin, Vec3f bMax) : bmin(bMin), bmax(bMax), bEmpty(false), dirty(true) {}
 
-    __device__ __inline__
+    __host__ __device__ __inline__
         Vec3f getMin() const { return bmin; }
-    __device__ __inline__
+    __host__ __device__ __inline__
         Vec3f getMax() const { return bmax; }
-    __device__
+    __host__ __device__
         bool isEmpty() { return bEmpty; }
 
-    __device__
+    __host__ __device__
         void setMin(Vec3f bMin) {
             bmin = bMin;
             dirty = true;
             bEmpty = false;
         }
-    __device__
+    __host__ __device__
         void setMax(Vec3f bMax) {
             bmax = bMax;
             dirty = true;
             bEmpty = false;
         }
-    __device__
+    __host__ __device__
         void setMin(int i, float val) {
             if (i == 0) { bmin.x = val; dirty = true; bEmpty = false; }
             else if (i == 1) { bmin.y = val; dirty = true; bEmpty = false; }
             else if (i == 2) { bmin.z = val; dirty = true; bEmpty = false; }
         }
-    __device__
+    __host__ __device__
         void setMax(int i, float val) {
             if (i == 0) { bmax.x = val; dirty = true; bEmpty = false; }
             else if (i == 1) { bmax.y = val; dirty = true; bEmpty = false; }
             else if (i == 2) { bmax.z = val; dirty = true; bEmpty = false; }
         }
-    __device__
+    __host__ __device__
         void setEmpty() {
             bEmpty = true;
         }
 
     // Does this bounding box intersect the target?
-    __device__
+    __host__ __device__
         bool intersects(const BoundingBox &target) const {
             return ((target.getMin().x - RAY_EPSILON <= bmax.x) && (target.getMax().x + RAY_EPSILON >= bmin.x) &&
                     (target.getMin().y - RAY_EPSILON <= bmax.y) && (target.getMax().y + RAY_EPSILON >= bmin.y) &&
@@ -64,7 +66,7 @@ class BoundingBox {
         }
 
     // does the box contain this point?
-    __device__
+    __host__ __device__
         bool intersects(const Vec3f& point) const {
             return ((point.x + RAY_EPSILON >= bmin.x) && (point.y + RAY_EPSILON >= bmin.y) && (point.z + RAY_EPSILON >= bmin.z) &&
                     (point.x - RAY_EPSILON <= bmax.x) && (point.y - RAY_EPSILON <= bmax.y) && (point.z - RAY_EPSILON <= bmax.z));
@@ -74,7 +76,7 @@ class BoundingBox {
     // closest to the origin in tMin and the "t" value of the far intersection
     // in tMax and return true, else return false.
     // Using Kay/Kajiya algorithm.
-    __device__
+    __host__ __device__
         bool intersect(const ray& r, float& tMin, float& tMax) const {
             Vec3f R0 = r.getPosition();
             Vec3f Rd = r.getDirection();
@@ -139,7 +141,7 @@ class BoundingBox {
             return true; // it made it past all 3 axes.
         }
 
-    __device__
+    __host__ __device__
         void operator=(const BoundingBox& target) {
             bmin = target.bmin;
             bmax = target.bmax;
@@ -149,7 +151,7 @@ class BoundingBox {
             bEmpty = target.bEmpty;
         }
 
-    __device__
+    __host__ __device__
         float area() {
             if (bEmpty) return 0.0;
             else if (dirty) {
@@ -159,7 +161,7 @@ class BoundingBox {
             return bArea;
         }
 
-    __device__
+    __host__ __device__
         float volume() {
             if (bEmpty) return 0.0;
             else if (dirty) {
@@ -169,7 +171,7 @@ class BoundingBox {
             return bVolume;
         }
 
-    __device__
+    __host__ __device__
         void merge(const BoundingBox& bBox)	{
             if (bBox.bEmpty) return;
             

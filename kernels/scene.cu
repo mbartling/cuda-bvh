@@ -1,5 +1,8 @@
 #include "scene.h"
 #include <stdio.h>
+#include <thrust/device_vector.h>
+#include <thrust/device_ptr.h>
+#include <thrust/transform_reduce.h>
 
 struct minAccessor{
     
@@ -52,7 +55,7 @@ void Scene_d::computeBoundingBoxes(){
 
 }
 
-void AverageSuperSampling(Vec3f* smallImage, i
+void AverageSuperSampling(Vec3f* smallImage, 
                           Vec3f* deviceImage, 
                           int imageWidth, 
                           int imageHeight, 
@@ -64,11 +67,19 @@ void AverageSuperSampling(Vec3f* smallImage, i
     AverageSuperSamplingKernel<<<gridDim, blockDim>>>(smallImage, deviceImage, imageWidth, imageHeight, superSampling);
 }
 
-void Scene_d::findMinMax(Vec3f& mMin, Vec3f mMax){
+void Scene_d::findMinMax(Vec3f& mMin, Vec3f& mMax){
 
     thrust::device_ptr<BoundingBox> dvp(BBoxs);
-    mMin = thrust::transform_reduce(dvp, dvp + numTriangles, minAccessor(), Vec3f(1e9, 1e9, 1e9), minFunctor);
-    mMax = thrust::transform_reduce(dvp, dvp + numTriangles, maxAccessor(),Vec3f(-1e9, -1e9, -1e9), maxFunctor);
+    mMin = thrust::transform_reduce(dvp, 
+            dvp + numTriangles, 
+            minAccessor(), 
+            Vec3f(1e9, 1e9, 1e9), 
+            minFunctor());
+    mMax = thrust::transform_reduce(dvp, 
+            dvp + numTriangles, 
+            maxAccessor(),
+            Vec3f(-1e9, -1e9, -1e9),
+            maxFunctor());
 }
 
 
@@ -78,9 +89,17 @@ void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndi
     if (idx >= numTriangles) return;
 
     TriangleIndices t_idx = t_indices[idx];
-    printf("idx(%d), a(%d, %d, %d)\n" , idx, vertices[t_idx.a.vertex_index].x,
+    printf("idx(%d), a(%0.6f, %0.6f, %0.6f)\n" , idx, vertices[t_idx.a.vertex_index].x,
                                      vertices[t_idx.a.vertex_index].y,
                                      vertices[t_idx.a.vertex_index].z);
+
+    printf("idx(%d), b(%0.6f, %0.6f, %0.6f)\n" , idx, vertices[t_idx.b.vertex_index].x,
+                                     vertices[t_idx.b.vertex_index].y,
+                                     vertices[t_idx.b.vertex_index].z);
+
+    printf("idx(%d), c(%0.6f, %0.6f, %0.6f)\n" , idx, vertices[t_idx.c.vertex_index].x,
+                                     vertices[t_idx.c.vertex_index].y,
+                                     vertices[t_idx.c.vertex_index].z);
 
     BBoxs[idx] = computeTriangleBoundingBox(vertices[t_idx.a.vertex_index],vertices[t_idx.b.vertex_index],vertices[t_idx.c.vertex_index]);
 
@@ -99,10 +118,10 @@ BoundingBox computeTriangleBoundingBox(const Vec3f& a, const Vec3f& b, const Vec
     return localbounds;
 }
 
-__device__
-bool Scene_d::intersect(const ray& r, isect& i){
-    return bvh.intersect(r, i, this);
-}
+//__device__
+//bool Scene_d::intersect(const ray& r, isect& i){
+//    return bvh.intersect(r, i, this);
+//}
 
 __global__
 void AverageSuperSamplingKernel(Vec3f* smallImage, Vec3f* deviceImage, int imageWidth, int imageHeight, int superSampling)

@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	{
 		fprintf(stdout, "--required with argument '%s'\n", opt.arg);
 		/*build the tree */
-                Scene_h scene(1024,1024);
+                Scene_h scene(1024,1024, 1);
                 scene.LoadObj(opt.arg);
 
 		bvh(scene);

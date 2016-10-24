@@ -101,7 +101,7 @@ void computeMortonCodesKernel(unsigned int* mortonCodes, unsigned int* object_id
     object_ids[idx] = idx;
     Vec3f centroid = computeCentroid(BBoxs[idx]);
     mortonCodes[idx] = morton3D(centroid.x, centroid.y, centroid.z);
-    printf("in computeMortonCodesKernel: idx->%d , mortonCode->%d, centroid(%d,%d,%d)\n  ", idx, mortonCodes[idx], centroid.x, centroid.y, centroid.z);
+    printf("in computeMortonCodesKernel: idx->%d , mortonCode->%d, centroid(%0.6f,%0.6f,%0.6f)\n", idx, mortonCodes[idx], centroid.x, centroid.y, centroid.z);
 
 };
 
@@ -237,7 +237,3 @@ unsigned int morton3D(float x, float y, float z)
     unsigned int zz = expandBits((unsigned int)z);
     return xx * 4 + yy * 2 + zz;
 }
-__device__
- bool intersect(const ray& r, isect& i, Scene_d* scene){
-
- }

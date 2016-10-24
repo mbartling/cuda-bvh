@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
-
+#include "vec.h"
+#include "tiny_obj_loader.h"
+#include "common.h"
 using namespace tinyobj;
 
 // A triangle is 3 Vertex Indices
@@ -15,5 +17,3 @@ class ray;
 class isect;
 class Scene_d;
 
-__device__
-bool intersectTriangle(const ray& r, isect&  i, Scene_d* scene, int object_id);
