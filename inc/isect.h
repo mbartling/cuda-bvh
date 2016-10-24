@@ -1,5 +1,6 @@
 #pragma once
-
+#include "vec.h"
+#include "material.h"
 class isect {
     public:
         float t;

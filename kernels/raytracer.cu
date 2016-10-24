@@ -13,7 +13,7 @@ void RayTracer::run(){
     int blockSize = 32;
     dim3 blockDim(blockSize, blockSize); //A thread block is 32x32 pixels
     dim3 gridDim(deviceScene.imageWidth/blockDim.x, deviceScene.imageHeight/blockDim.y);
-    int stackDepth ( 1 << depth) - 1;
+    int stackDepth = ( 1 << depth) - 1;
     runRayTracerKernel<<<gridDim, blockDim, stackDepth*sizeof(RayStack)>>>(deviceScene, depth);
 }
 
@@ -25,6 +25,8 @@ void runRayTracerKernel(Scene_d scene, int depth){
 
     int px = blockIdx.x * blockDim.x + threadIdx.x;
     int py = blockIdx.y * blockDim.y + threadIdx.y;
+    int idx = py*scene.imageWidth + px;
+
     float x = float(px)/float(scene.imageWidth);
     float y = float(py)/float(scene.imageHeight);
 
@@ -32,14 +34,14 @@ void runRayTracerKernel(Scene_d scene, int depth){
     //perturb
     //x += randx; //in [0,1]
     //y += randy; //in [0,1]
-    scene.camera.rayThrough(x, y, r);
+    //scene.camera.rayThrough(x, y, stackPtr->r);
 
 
     while(true){
-        ray& r = &(stackPtr->r);
-        isect& i = &(stackPtr->i);
-        Vec3f& colorC = &(stackPtr->colorC);
-        int& state = &(stackPtr->state);
+        ray& r = stackPtr->r;
+        isect& i = stackPtr->i;
+        Vec3f& colorC = stackPtr->colorC;
+        int& state = stackPtr->state;
 
         if(state == 0) //Check for intersection
         {
@@ -55,7 +57,7 @@ void runRayTracerKernel(Scene_d scene, int depth){
         }
         if(state == 1) //Check for reflection
         {
-            if(!i.m.Refl())
+            if(!i.material.Refl())
                 state = 3;
             else{
                 Vec3f Rdir = -2.0*(r.getDirection()*i.N)*i.N + r.getDirection();
@@ -77,12 +79,12 @@ void runRayTracerKernel(Scene_d scene, int depth){
         }
         if(state == 2) //Post reflection
         {
-            colorC += i.m.kr % (stackPtr+1)->colorC;
+            colorC += i.material.kr % (stackPtr+1)->colorC;
             state = 3;
         }
         if(state == 3) //Check for refraction
         {
-            if(!i.m.Trans())
+            if(!i.material.Trans())
                 state = 5; // Done
             else{
                 Vec3f n = i.N;
@@ -90,7 +92,7 @@ void runRayTracerKernel(Scene_d scene, int depth){
                 Vec3f rcos = n*(-rd*n);
                 Vec3f rsin = rcos + rd;
                 float etai = 1.0;
-                float etat = i.m.ior;
+                float etat = i.material.ior;
                 Vec3f tcos, tsin;
                 float eta;
                 if(rd*n < 0){
@@ -104,7 +106,7 @@ void runRayTracerKernel(Scene_d scene, int depth){
                 if(TIR >= 0){
                     tcos = n*sqrt(TIR);
                     Vec3f Tdir = tcos + tsin;
-                    Vec3f q = r.at(i);
+                    Vec3f q = r.at(i.t);
                     normalize(Tdir);
                     
                     //Put DRT stuff HERE
@@ -125,11 +127,11 @@ void runRayTracerKernel(Scene_d scene, int depth){
         if(state == 4) //Post refraction
         {
 
-            colorC += i.m.kt % (stackPtr+1)->colorC;
+            colorC += i.material.kt % (stackPtr+1)->colorC;
             state = 5;
         }
         // There is no state 5 on purpose
-        if(stackI == 0) //Hit nothing and am at root of stack
+        if(curDepth == 0) //Hit nothing and am at root of stack
             break;
         else{
             stackPtr--; //Pop

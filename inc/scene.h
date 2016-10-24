@@ -7,6 +7,8 @@
 #include "bbox.h"
 #include "bvh.h"
 #include <stdlib.h>
+#include "material.h"
+#include "isect.h"
 
 using namespace tinyobj;
 using std::vector;
@@ -27,11 +29,14 @@ class Scene_h{
     private:
         // Host Side
         attrib_t mAttributes;
-        vector<Vec4f> image;
+        vector<Vec3f> image;
         vector<TriangleIndices> t_indices;
         vector<int> material_ids;
+        vector<Material> materials;
+
         int imageWidth;
         int imageHeight;
+        int numMaterials;
         int superSampling;
         
         friend class Scene_d;
@@ -55,17 +60,20 @@ class Scene_d{
         int numTriangles;
         int imageWidth;
         int imageHeight;
+        int numMaterials;
 
         Vec3f* vertices;
         Vec3f* normals;
         Vec3f* texcoords;
 
         Material* materials;
+        int* material_ids;
+
         BoundingBox* BBoxs; //Per Triangle Bounding Box
 
         TriangleIndices* t_indices;
 
-        Vec4f* image;
+        Vec3f* image;
         BVH_d bvh;
 
         friend class Scene_h;
@@ -74,9 +82,12 @@ class Scene_d{
         Scene_d& operator = (const Scene_h& hostScene); //Copy Triangles, materials, etc to the device
     
         void computeBoundingBoxes();
+        void findMinMax(Vec3f& mMin, Vec3f& mMax);
 
         __device__
-        bool intersect(const ray& r, isect& i); //Find the closest point of intersection
+        bool intersect(const ray& r, isect& i){ //Find the closest point of intersection
+            return bvh.intersect(r, i);
+        }
 
         ~Scene_d();
 
