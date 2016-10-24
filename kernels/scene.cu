@@ -75,7 +75,7 @@ void Scene_d::findMinMax(Vec3f& mMin, Vec3f mMax){
 __global__ 
 void computeBoundingBoxes_kernel(int numTriangles, Vec3f* vertices, TriangleIndices* t_indices, BoundingBox* BBoxs){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx > numTriangles) return;
+    if (idx >= numTriangles) return;
 
     TriangleIndices t_idx = t_indices[idx];
     printf("idx(%d), a(%d, %d, %d)\n" , idx, vertices[t_idx.a.vertex_index].x,
