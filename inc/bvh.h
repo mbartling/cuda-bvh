@@ -54,9 +54,9 @@ class BVH_d {
 
     public:
 
-        void setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int mnumTriangles, Material* mmaterials);
+        void setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int mnumTriangles, Material* mmaterials, Vec3f mMin , Vec3f mMax);
         ~BVH_d();
-        void computeMortonCodes(); //Also Generates the objectIds
+        void computeMortonCodes(Vec3f& mMin, Vec3f& mMax); //Also Generates the objectIds
         void sortMortonCodes();
 
         void setupLeafNodes();

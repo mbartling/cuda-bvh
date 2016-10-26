@@ -33,7 +33,7 @@ int2 determineRange(unsigned int* sortedMortonCodes, int numTriangles, int idx);
 
 __global__ 
 void computeMortonCodesKernel(unsigned int* mortonCodes, unsigned int* object_ids, 
-        BoundingBox* BBoxs, int numTriangles);
+        BoundingBox* BBoxs, int numTriangles, Vec3f mMin, Vec3f mMax);
 __global__ 
 void setupLeafNodesKernel(unsigned int* sorted_object_ids, 
         LeafNode* leafNodes, int numTriangles);
@@ -44,11 +44,11 @@ void generateHierarchyKernel(unsigned int* mortonCodes,
         InternalNode* internalNodes,
         LeafNode* leafNodes, int numTriangles);
 
-void BVH_d::computeMortonCodes(){
+void BVH_d::computeMortonCodes(Vec3f& mMin, Vec3f& mMax){
     int threadsPerBlock = 256;
     int blocksPerGrid =
         (numTriangles + threadsPerBlock - 1) / threadsPerBlock;
-    computeMortonCodesKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, BBoxs, numTriangles);
+    computeMortonCodesKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, BBoxs, numTriangles, mMin , mMax);
 
 }
 void BVH_d::sortMortonCodes(){
@@ -93,13 +93,17 @@ void bvh(Scene_h& scene_h)
 // This kernel just computes the object id and morton code for the centroid of each bounding box
 __global__ 
 void computeMortonCodesKernel(unsigned int* mortonCodes, unsigned int* object_ids, 
-        BoundingBox* BBoxs, int numTriangles){
+        BoundingBox* BBoxs, int numTriangles, Vec3f mMin , Vec3f mMax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= numTriangles)
         return;
 
     object_ids[idx] = idx;
     Vec3f centroid = computeCentroid(BBoxs[idx]);
+    centroid.x = (centroid.x - mMin.x)/(mMax.x - mMin.x);
+    centroid.y = (centroid.y - mMin.y)/(mMax.y - mMin.y);
+    centroid.z = (centroid.z - mMin.z)/(mMax.z - mMin.z);
+    //map this centroid to unit cube
     mortonCodes[idx] = morton3D(centroid.x, centroid.y, centroid.z);
     printf("in computeMortonCodesKernel: idx->%d , mortonCode->%d, centroid(%0.6f,%0.6f,%0.6f)\n", idx, mortonCodes[idx], centroid.x, centroid.y, centroid.z);
 

@@ -1,6 +1,6 @@
 #include "bvh.h"
 
-void BVH_d::setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int mnumTriangles, Material* mmaterials){
+void BVH_d::setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, TriangleIndices* mt_indices, int mnumTriangles, Material* mmaterials, Vec3f mMin, Vec3f mMax){
     numTriangles = mnumTriangles;
     normals = mnormals;
     vertices = mvertices;
@@ -15,7 +15,7 @@ void BVH_d::setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, Triang
     cudaMalloc(&internalNodes, (numTriangles - 1)*sizeof(InternalNode));
 
     // Set up for the BVH Build
-    computeMortonCodes();
+    computeMortonCodes(mMin, mMax);
     sortMortonCodes();
 
     // Build the BVH
