@@ -17,6 +17,7 @@ void BVH_d::setUp(Vec3f* mvertices, Vec3f* mnormals, BoundingBox* mBBoxs, Triang
     // Set up for the BVH Build
     computeMortonCodes(mMin, mMax);
     sortMortonCodes();
+    buildTree();
 
     // Build the BVH
 

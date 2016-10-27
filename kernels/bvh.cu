@@ -71,8 +71,10 @@ void BVH_d::buildTree(){
     int blocksPerGrid =
         (numTriangles - 1 + threadsPerBlock - 1) / threadsPerBlock;
     setupLeafNodesKernel<<<blocksPerGrid, threadsPerBlock>>>(object_ids, leafNodes, numTriangles);
+    generateHierarchyKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, internalNodes , leafNodes , numTriangles);
 
 }
+
 void bvh(Scene_h& scene_h)
 {
     Scene_d scene_d;
@@ -131,7 +133,7 @@ void generateHierarchyKernel(unsigned int* sortedMortonCodes,
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx > numTriangles - 1 )
+    if (idx > numTriangles - 2 ) //there are n - 1 internal nodes
         return;
 
     internalNodes[idx].isLeaf = false ;
@@ -216,7 +218,80 @@ int findSplit( unsigned int* sortedMortonCodes,
 __device__
 int2 determineRange(unsigned int* sortedMortonCodes, int numTriangles, int idx)
 {
-   return make_int2(0,0);
+   //determine the range of keys covered by each internal node (as well as its children)
+    //direction is found by looking at the neighboring keys ki-1 , ki , ki+1
+    //the index is either the beginning of the range or the end of the range
+    int direction = 0;
+    int common_prefix_with_left = 0;
+    int common_prefix_with_right = 0;
+
+    common_prefix_with_right = __clz(sortedMortonCodes[idx] ^ sortedMortonCodes[idx + 1]);
+    if(idx == 0){
+        common_prefix_with_left = -1;
+    }
+    else
+    {
+        common_prefix_with_left = __clz(sortedMortonCodes[idx] ^ sortedMortonCodes[idx - 1]);
+
+    }
+
+    direction = ( (common_prefix_with_right - common_prefix_with_left) > 0 ) ? 1 : -1;
+    int min_prefix_range = 0;
+
+    if(idx == 0)
+    {
+        min_prefix_range = -1;
+
+    }
+    else
+    {
+        min_prefix_range = __clz(sortedMortonCodes[idx] ^ sortedMortonCodes[idx - direction]); 
+    }
+
+    int lmax = 2;
+    int next_key = idx + lmax*direction;
+
+    while((next_key >= 0) && (next_key <  numTriangles) && (__clz(sortedMortonCodes[idx] ^ sortedMortonCodes[next_key]) > min_prefix_range))
+    {
+        lmax *= 2;
+        next_key = idx + lmax*direction;
+    }
+    //find the other end using binary search
+    unsigned int l = 0;
+
+    do
+    {
+        lmax = (lmax + 1) >> 1; // exponential decrease
+        int new_val = idx + (l + lmax)*direction ; 
+
+        if(new_val >= 0 && new_val < numTriangles )
+        {
+            unsigned int Code = sortedMortonCodes[new_val];
+            int Prefix = __clz(sortedMortonCodes[idx] ^ Code);
+            if (Prefix > min_prefix_range)
+                l = l + lmax;
+        }
+    }
+    while (lmax > 1);
+
+    int j = idx + l*direction;
+
+    int left = 0 ; 
+    int right = 0;
+    
+    if(idx < j){
+        left = idx;
+        right = j;
+    }
+    else
+    {
+        left = j;
+        right = idx;
+    }
+
+    printf("idx : (%d) returning range (%d, %d) \n" , idx , left, right);
+
+    return make_int2(left,right);
 }
     __device__
 unsigned int expandBits(unsigned int v)
