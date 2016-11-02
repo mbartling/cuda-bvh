@@ -13,11 +13,12 @@ struct Node{
     Node* childA;
     Node* childB;
     Node* parent;
+    int flag;
     bool isLeaf;
     BoundingBox BBox;
 
     __device__ 
-        Node() : isLeaf(false) {}
+        Node() : isLeaf(false) , flag(0), parent(nullptr) {}
 };
 struct LeafNode : public Node {
     unsigned int object_id;

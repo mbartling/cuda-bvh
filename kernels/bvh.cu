@@ -39,10 +39,15 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
         LeafNode* leafNodes, int numTriangles);
 
 __global__ 
+void computeBBoxesKernel( LeafNode* leafNodes,
+        InternalNode* internalNodes,
+        int numTriangles);
+
+__global__ 
 void generateHierarchyKernel(unsigned int* mortonCodes,
         unsigned int* sorted_object_ids, 
         InternalNode* internalNodes,
-        LeafNode* leafNodes, int numTriangles);
+        LeafNode* leafNodes, int numTriangles, BoundingBox* BBoxs);
 
 void BVH_d::computeMortonCodes(Vec3f& mMin, Vec3f& mMax){
     int threadsPerBlock = 256;
@@ -71,7 +76,8 @@ void BVH_d::buildTree(){
     int blocksPerGrid =
         (numTriangles - 1 + threadsPerBlock - 1) / threadsPerBlock;
     setupLeafNodesKernel<<<blocksPerGrid, threadsPerBlock>>>(object_ids, leafNodes, numTriangles);
-    generateHierarchyKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, internalNodes , leafNodes , numTriangles);
+    generateHierarchyKernel<<<blocksPerGrid, threadsPerBlock>>>(mortonCodes, object_ids, internalNodes , leafNodes , numTriangles, BBoxs);
+    computeBBoxesKernel<<<blocksPerGrid, threadsPerBlock>>>(leafNodes, internalNodes, numTriangles);
 
 }
 
@@ -81,7 +87,7 @@ void bvh(Scene_h& scene_h)
     scene_d = scene_h;
     
     //launch the kernel
-    hello<<<NUM_BLOCKS, BLOCK_WIDTH>>>();
+    //hello<<<NUM_BLOCKS, BLOCK_WIDTH>>>();
 
     //force the printf()s to flush
     cudaDeviceSynchronize();
@@ -124,11 +130,53 @@ void setupLeafNodesKernel(unsigned int* sorted_object_ids,
     leafNodes[idx].childB = nullptr;
 }
 
+__global__ 
+void computeBBoxesKernel( LeafNode* leafNodes, InternalNode* internalNodes, int numTriangles)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= numTriangles)
+        return;
+
+    Node* Parent = leafNodes[idx].parent;
+    while(Parent)
+    {
+        if(atomicCAS(&(Parent->flag), 0 , 1))
+        {
+            Parent->BBox.bEmpty = true;
+            Parent->BBox.merge(Parent->childA->BBox);
+            Parent->BBox.merge(Parent->childB->BBox);
+
+
+            printf("**********parent child relationships**********\n");
+            printf("* parent idx (%d) bmin(%0.6f,%0.6f,%0.6f) bmax(%0.6f,%0.6f,%0.6f) \n"
+                    "* childA is_leaf(%d) bmin(%0.6f,%0.6f,%0.6f) bmax(%0.6f,%0.6f,%0.6f) \n"
+                    "* childB is_leaf(%d) bmin(%0.6f,%0.6f,%0.6f) bmax(%0.6f,%0.6f,%0.6f) \n",
+                    (InternalNode*) Parent - internalNodes, Parent->BBox.bmin.x , Parent->BBox.bmin.y,Parent->BBox.bmin.z, Parent->BBox.bmax.x , Parent->BBox.bmax.y, Parent->BBox.bmax.z,
+                    Parent->childA->isLeaf, Parent->childA->BBox.bmin.x, Parent->childA->BBox.bmin.y , Parent->childA->BBox.bmin.z, Parent->childA->BBox.bmax.x, Parent->childA->BBox.bmax.y, Parent->childA->BBox.bmax.z ,
+                    Parent->childB->isLeaf, Parent->childB->BBox.bmin.x, Parent->childB->BBox.bmin.y , Parent->childB->BBox.bmin.z, Parent->childB->BBox.bmax.x, Parent->childB->BBox.bmax.y, Parent->childB->BBox.bmax.z );
+
+
+            Parent = Parent->parent;
+        }
+        else{
+            return;
+
+
+        }
+
+
+
+    }
+
+
+
+}
+
     __global__ 
 void generateHierarchyKernel(unsigned int* sortedMortonCodes,
         unsigned int* sorted_object_ids, 
         InternalNode* internalNodes,
-        LeafNode* leafNodes, int numTriangles)
+        LeafNode* leafNodes, int numTriangles, BoundingBox* BBoxs)
 {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -150,7 +198,10 @@ void generateHierarchyKernel(unsigned int* sortedMortonCodes,
 
     Node* childA;
     if (split == first)
+    {
         childA = &leafNodes[split];
+        childA->BBox = BBoxs[split];
+    }
     else
         childA = &internalNodes[split];
 
@@ -158,7 +209,10 @@ void generateHierarchyKernel(unsigned int* sortedMortonCodes,
 
     Node* childB;
     if (split + 1 == last)
+    {
         childB = &leafNodes[split + 1];
+        childB->BBox = BBoxs[split + 1];
+    }
     else
         childB = &internalNodes[split + 1];
 
@@ -168,6 +222,9 @@ void generateHierarchyKernel(unsigned int* sortedMortonCodes,
     internalNodes[idx].childB = childB;
     childA->parent = &internalNodes[idx];
     childB->parent = &internalNodes[idx];
+
+            
+
 
 }
 //===========END KERNELS=============================
